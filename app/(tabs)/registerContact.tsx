@@ -42,8 +42,8 @@ export default function AddContactScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, gap: 12 },
-  title: { fontSize: 24, fontWeight: "bold" },
-  input: { borderWidth: 1, borderColor: "#aaa", padding: 10, borderRadius: 8 },
+  container: { flex: 1, padding: 20, gap: 12, backgroundColor: "#fff" },
+  title: { fontSize: 24, fontWeight: "bold", marginBottom: 20 },
+  input: { borderWidth: 1, borderColor: "#aaa", padding: 10, borderRadius: 8, color: "#222121ff" },
   error: { color: "red" },
 });

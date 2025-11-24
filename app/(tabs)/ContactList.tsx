@@ -1,49 +1,61 @@
-import React, { useState } from "react";
-import { ActivityIndicator, Alert, Button, StyleSheet, Text, TextInput, View } from "react-native";
-import { handleCreateContact } from "../../src/controller/contactControl";
+import React, { useEffect, useState } from "react";
+import { ActivityIndicator, FlatList, StyleSheet, Text, View } from "react-native";
+import { observeContacts } from "../../src/controller/contactControl";
 
-export default function AddContactScreen() {
-  const [IDStudent, setId] = useState("");
-  const [Name, setName] = useState("");
-  const [Semester, setSemester] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
 
-  const onSave = async () => {
-    setLoading(true);
-    setErrorMessage("");
+type Student = {
+  id: string;
+  IDStudent: string;
+  Name: string;
+  Semester: number;
+};
 
-    try {
-      await handleCreateContact({ IDStudent, Name, Semester});
-      Alert.alert("Contacto guardado exitosamente");
-      setId("");
-      setName("");
-      setSemester("");
-    } catch (error:any) {
-      setErrorMessage(error.message);
-    }
+export default function ContactListScreen() {
+  const [contacts, setContacts] = useState <Student[]>([]);
+  const [loading, setLoading] = useState(true);
 
-    setLoading(false);
-  };
+
+  useEffect(() => {
+    const unsubscribe = observeContacts((items: Student[]) => {
+      setContacts(items);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const renderItem = ({item}: {item: Student }) => (
+    <View style={styles.card}> 
+        <Text style={styles.titleField}>{item.Name}</Text>
+      <Text>Matrícula: {item.IDStudent}</Text>
+      <Text>Semestre: {item.Semester}</Text>
+    </View>
+  );
+
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator />
+        <Text>Cargando contactos...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Agregar contacto</Text>
+      <Text style={styles.title}>Contactos guardados</Text>
 
-      <TextInput style={styles.input} placeholder="Mátricula" value={IDStudent} onChangeText={setId} />
-      <TextInput style={styles.input} placeholder="Nombre completo" autoCapitalize="words" value={Name} onChangeText={setName} />
-      <TextInput style={styles.input} placeholder="Semestre" keyboardType="numeric" value={Semester} onChangeText={setSemester} />
-
-      {errorMessage ? <Text style={styles.error}>{errorMessage}</Text> : null}
-
-      {loading ? <ActivityIndicator /> : <Button title="Guardar" onPress={onSave} />}
+      <FlatList data={contacts} keyExtractor={(item) => item.id} renderItem={renderItem} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, gap: 12 },
-  title: { fontSize: 24, fontWeight: "bold" },
-  input: { borderWidth: 1, borderColor: "#aaa", padding: 10, borderRadius: 8 },
-  error: { color: "red" },
+  container: { flex: 1, padding: 20, backgroundColor: "#fff" },
+  center: { flex: 1, justifyContent: "center", alignItems: "center" },
+  title: { fontSize: 22, fontWeight: "bold", marginBottom: 12 },
+    titleField: { fontSize: 18, fontWeight: "bold" , marginBottom: 4},
+  card: { padding: 12, borderWidth: 1, borderColor: "#ccc", borderRadius: 8, marginBottom: 10 },
+  name: { fontSize: 16, fontWeight: "bold" },
+  email: { color: "#666" },
 });
